@@ -1,0 +1,10 @@
+[
+  {
+    "task": "\"Сделать домашнее задание\"",
+    "category": "работа",
+    "priority": 2,
+    "due_date": "10.01.2024",
+    "completed": false,
+    "created_at": "05.01.2025"
+  }
+]
