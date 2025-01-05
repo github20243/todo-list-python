@@ -1,10 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Менеджер Задач</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <!-- Добавляем иконки и анимации -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .task-item {
+            transition: all 0.3s ease;
+        }
+        .task-item:hover {
+            transform: translateX(5px);
+        }
+        .priority-high { background-color: rgba(255, 99, 71, 0.1); }
+        .priority-medium { background-color: rgba(255, 165, 0, 0.1); }
+        .priority-low { background-color: rgba(144, 238, 144, 0.1); }
+    </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Заголовок -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">📝 Менеджер Задач</h1>
+            <p class="text-gray-600">Организуйте свои задачи эффективно</p>
+        </div>
 
+        <!-- Форма добавления задачи -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 transform hover:scale-[1.02] transition-transform duration-300">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 flex items-center">
+                <i class="fas fa-plus-circle mr-2 text-blue-500"></i>
+                Новая задача
+            </h2>
+            <form action="/add" method="POST" class="space-y-6">
+                <!-- Поле ввода задачи -->
+                <div class="relative">
+                    <input type="text" name="task"
+                           class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent pl-10"
+                           placeholder="Что нужно сделать?" required>
+                    <i class="fas fa-tasks absolute left-3 top-3.5 text-gray-400"></i>
+                </div>
+
+                <!-- Группа полей -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Категория -->
+                    <div class="relative">
+                        <select name="category" required
+                                class="w-full p-3 border border-gray-200 rounded-lg appearance-none focus:ring-2 focus:ring-blue-400 focus:border-transparent pl-10">
+                            <option value="">Категория</option>
+                            <option value="работа">👔 Работа</option>
+                            <option value="дом">🏠 Дом</option>
+                            <option value="учеба">📚 Учеба</option>
+                            <option value="другое">📌 Другое</option>
+                        </select>
+                        <i class="fas fa-folder absolute left-3 top-3.5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Приоритет -->
+                    <div class="relative">
+                        <select name="priority" required
+                                class="w-full p-3 border border-gray-200 rounded-lg appearance-none focus:ring-2 focus:ring-blue-400 focus:border-transparent pl-10">
+                            <option value="">Приоритет</option>
+                            <option value="1">🔴 Высокий</option>
+                            <option value="2">🟡 Средний</option>
+                            <option value="3">🟢 Низкий</option>
+                        </select>
+                        <i class="fas fa-flag absolute left-3 top-3.5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Дата -->
+                    <div class="relative">
+                        <input type="date" name="due_date" required
+                               class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent pl-10">
+                        <i class="fas fa-calendar absolute left-3 top-3.5 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Кнопка добавления -->
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transform hover:-translate-y-0.5 transition-all duration-200">
+                    Добавить задачу
+                </button>
+            </form>
+        </div>
+
+        <!-- Список задач -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-6 text-gray-700 flex items-center">
+                <i class="fas fa-list-check mr-2 text-blue-500"></i>
+                Ваши задачи
+            </h2>
+
+            {% if tasks %}
+                <div class="space-y-4">
+                    {% for task in tasks %}
+                        <div class="task-item flex items-center justify-between p-4 rounded-lg border border-gray-100
+                                  {% if task.priority == 1 %}priority-high
+                                  {% elif task.priority == 2 %}priority-medium
+                                  {% else %}priority-low{% endif %}
+                                  {% if task.completed %}opacity-75{% endif %}">
+                            <div class="flex items-center space-x-4 flex-1">
+                                <!-- Чекбокс -->
+                                <a href="/toggle/{{ loop.index0 }}"
+                                   class="flex-shrink-0 w-6 h-6 rounded-full border-2 hover:border-blue-500 transition-colors duration-200
+                                          {% if task.completed %}bg-blue-500 border-blue-500{% else %}border-gray-300{% endif %}
+                                          flex items-center justify-center">
+                                    {% if task.completed %}
+                                        <i class="fas fa-check text-white text-sm"></i>
+                                    {% endif %}
+                                </a>
+
+                                <!-- Информация о задаче -->
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-gray-800 truncate {% if task.completed %}line-through text-gray-500{% endif %}">
+                                        {{ task.task }}
+                                    </p>
+                                    <div class="flex flex-wrap gap-2 mt-1">
+                                        <span class="inline-flex items-center text-sm text-gray-600">
+                                            <i class="far fa-calendar mr-1"></i>
+                                            {{ task.due_date }}
+                                        </span>
+                                        <span class="inline-flex items-center text-sm text-gray-600">
+                                            <i class="far fa-folder mr-1"></i>
+                                            {{ task.category }}
+                                        </span>
+                                        <span class="inline-flex items-center text-sm
+                                                     {% if task.priority == 1 %}text-red-500
+                                                     {% elif task.priority == 2 %}text-yellow-500
+                                                     {% else %}text-green-500{% endif %}">
+                                            <i class="fas fa-flag mr-1"></i>
+                                            {% if task.priority == 1 %}
+                                                Высокий
+                                            {% elif task.priority == 2 %}
+                                                Средний
+                                            {% else %}
+                                                Низкий
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка удаления -->
+                            <a href="/delete/{{ loop.index0 }}"
+                               class="ml-4 text-gray-400 hover:text-red-500 transition-colors duration-200">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <i class="fas fa-tasks text-gray-300 text-5xl mb-4"></i>
+                    <p class="text-gray-500">Список задач пуст</p>
+                    <p class="text-gray-400 text-sm">Добавьте свою первую задачу!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
